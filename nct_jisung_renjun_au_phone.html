@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jisung's Phone - NCT AU</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for audio synth & sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background: #090d16;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Glassmorphic UI Tokens */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(15, 17, 23, 0.78);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-btn:active {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(0.92);
+        }
+
+        /* Phone frame shadow & glow */
+        .phone-container {
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 50px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+        }
+
+        /* Keyframe Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .pulse-ring {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+
+        /* Chat bubbles triangle */
+        .bubble-in::before {
+            content: "";
+            position: absolute;
+            left: -6px;
+            top: 10px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-right: 8px solid #262930;
+            border-bottom: 6px solid transparent;
+        }
+
+        .bubble-out::before {
+            content: "";
+            position: absolute;
+            right: -6px;
+            top: 10px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-left: 8px solid #2563eb;
+            border-bottom: 6px solid transparent;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-4 text-white">
+
+    <!-- PHONE FRAME -->
+    <div class="phone-container relative w-full max-w-[390px] h-[100vh] sm:h-[820px] bg-black rounded-none sm:rounded-[48px] p-2.5 sm:p-3 border-0 sm:border-[6px] border-slate-800 flex flex-col justify-between overflow-hidden">
+        
+        <!-- PHONE WALLPAPER BACKGROUND -->
+        <div id="phone-wallpaper" class="absolute inset-0 bg-cover bg-center transition-all duration-700 rounded-none sm:rounded-[42px]" style="background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop');">
+            <!-- Overlay dark gradient -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70"></div>
+        </div>
+
+        <!-- DYNAMIC ISLAND / NOTCH -->
+        <div class="absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full z-50 flex items-center justify-between px-2.5 shadow-md border border-white/10 transition-all duration-300 hover:w-36" id="dynamic-island" onclick="toggleIslandDetails()">
+            <div class="w-3 h-3 bg-neutral-900 rounded-full flex items-center justify-center">
+                <div class="w-1.5 h-1.5 bg-blue-900 rounded-full"></div>
+            </div>
+            <div id="island-content" class="text-[10px] text-gray-300 font-medium truncate px-1">1234 PIN</div>
+            <div class="w-2.5 h-2.5 bg-green-500/80 rounded-full animate-pulse"></div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div class="relative z-40 flex justify-between items-center px-6 pt-2 text-xs font-semibold text-white tracking-tight">
+            <span id="status-clock">09:41</span>
+            <div class="flex items-center space-x-1.5">
+                <i class="fa-solid fa-signal text-[10px]"></i>
+                <i class="fa-solid fa-wifi text-[10px]"></i>
+                <div class="w-5 h-2.5 border border-white/80 rounded-xs p-0.5 flex items-center">
+                    <div class="h-full w-4/5 bg-white rounded-2xs"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN CONTENT CONTAINER -->
+        <div class="relative w-full h-full flex-1 overflow-hidden z-20 flex flex-col mt-1">
+
+            <!-- 1. LOCK SCREEN -->
+            <div id="lock-screen" class="absolute inset-0 flex flex-col justify-between py-6 px-4 transition-all duration-500 z-30">
+                <!-- Clock & Date -->
+                <div class="flex flex-col items-center mt-4">
+                    <i class="fa-solid fa-lock text-xs mb-1 text-white/70" id="lock-icon"></i>
+                    <div id="lock-date" class="text-xs font-medium uppercase tracking-widest text-slate-200 drop-shadow">Jueves, 12 Octubre</div>
+                    <div id="lock-clock" class="text-7xl font-light tracking-tighter my-0.5 drop-shadow-lg">09:41</div>
+                    <div class="flex items-center space-x-1 mt-1 bg-white/15 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+                        <i class="fa-solid fa-heart text-pink-400 text-[10px]"></i>
+                        <span class="text-[11px] font-medium text-pink-200">renjun_323 posted</span>
+                    </div>
+                </div>
+
+                <!-- Notifications Center -->
+                <div id="lock-notifications-list" class="w-full space-y-2.5 my-auto max-h-[320px] overflow-y-auto px-1">
+                    
+                    <!-- Notification 1: Twitter Drama -->
+                    <div class="glass p-3 rounded-2xl flex items-start space-x-3 shadow-lg cursor-pointer transform hover:scale-[1.02] transition" onclick="showPasscodeScreen()">
+                        <div class="w-9 h-9 rounded-xl bg-black flex items-center justify-center text-white shrink-0 border border-white/20">
+                            <i class="fa-brands fa-x-twitter text-base"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="text-xs font-bold text-white">X / Twitter</h4>
+                                <span class="text-[9px] text-gray-300">Ahora</span>
+                            </div>
+                            <p class="text-xs font-semibold text-sky-300 truncate">@Chenle_Dolphin citó tu Tweet</p>
+                            <p class="text-[11px] text-gray-200 line-clamp-1">"WEYYY JISUNG BORRA ESO TE EQUIVOCASTE DE CUENTA 💀💀💀"</p>
+                        </div>
+                    </div>
+
+                    <!-- Notification 2: Renjun Message -->
+                    <div class="glass p-3 rounded-2xl flex items-start space-x-3 shadow-lg cursor-pointer border-l-4 border-l-pink-500 transform hover:scale-[1.02] transition" onclick="showPasscodeScreen()">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 shrink-0">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="text-xs font-bold text-pink-300">Renjun 🦊</h4>
+                                <span class="text-[9px] text-gray-300">Hace 1m</span>
+                            </div>
+                            <p class="text-[11px] text-gray-100 font-medium">¿Jisung? ¿Es verdad lo que pusiste en Twitter?...</p>
+                        </div>
+                    </div>
+
+                    <!-- Notification 3: Jeno -->
+                    <div class="glass p-3 rounded-2xl flex items-start space-x-3 shadow-lg cursor-pointer opacity-90" onclick="showPasscodeScreen()">
+                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 text-xs font-bold">
+                            J
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="text-xs font-semibold text-white">Jeno Hyung</h4>
+                                <span class="text-[9px] text-gray-300">Hace 2m</span>
+                            </div>
+                            <p class="text-[11px] text-gray-200 truncate">Bro Haechan vio el tweet y se está muriendo de risa en el ensayo 😭</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PIN Keypad View (Hidden by default) -->
+                <div id="passcode-container" class="w-full flex flex-col items-center hidden my-auto transition-all duration-300">
+                    <p class="text-xs font-medium mb-3 text-slate-200">Ingresa PIN de Jisung</p>
+                    
+                    <div id="pin-dots" class="flex space-x-3.5 mb-6">
+                        <div class="w-3.5 h-3.5 rounded-full border-2 border-white/80 transition-all"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border-2 border-white/80 transition-all"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border-2 border-white/80 transition-all"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border-2 border-white/80 transition-all"></div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3.5 w-full max-w-[250px] text-center mb-2">
+                        <button onclick="pressPin('1')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">1</button>
+                        <button onclick="pressPin('2')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">2</button>
+                        <button onclick="pressPin('3')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">3</button>
+                        <button onclick="pressPin('4')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">4</button>
+                        <button onclick="pressPin('5')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">5</button>
+                        <button onclick="pressPin('6')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">6</button>
+                        <button onclick="pressPin('7')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">7</button>
+                        <button onclick="pressPin('8')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">8</button>
+                        <button onclick="pressPin('9')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">9</button>
+                        <div></div>
+                        <button onclick="pressPin('0')" class="keypad-btn w-14 h-14 rounded-full glass-btn text-xl font-normal flex items-center justify-center mx-auto">0</button>
+                        <button onclick="deletePin()" class="w-14 h-14 flex items-center justify-center text-xs text-gray-300 mx-auto">Borrar</button>
+                    </div>
+                    <button onclick="alert('💡 Pista PIN: 1234')" class="text-[11px] text-sky-300 hover:underline mt-1">¿Olvidaste el PIN? (1234)</button>
+                </div>
+
+                <!-- Bottom Lock Footer -->
+                <div id="lock-bottom-hint" class="flex flex-col items-center space-y-2 cursor-pointer" onclick="showPasscodeScreen()">
+                    <div class="flex justify-between w-full px-4 mb-2">
+                        <div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center text-base"><i class="fa-solid fa-flashlight"></i></div>
+                        <div class="w-10 h-10 rounded-full glass-btn flex items-center justify-center text-base"><i class="fa-solid fa-camera"></i></div>
+                    </div>
+                    <span class="text-[11px] text-gray-300 tracking-wide font-light animate-pulse">Toca cualquier notificación para ingresar</span>
+                </div>
+            </div>
+
+            <!-- 2. HOME SCREEN -->
+            <div id="home-screen" class="absolute inset-0 flex flex-col justify-between p-3.5 opacity-0 pointer-events-none transition-all duration-500 scale-95 z-20">
+                <!-- Widgets Top -->
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                    <!-- Widget Clock -->
+                    <div class="glass p-3 rounded-2xl flex flex-col justify-between h-28 shadow-lg">
+                        <div>
+                            <span class="text-[10px] font-bold text-pink-400 uppercase tracking-widest">NCT DREAM AU</span>
+                            <div id="widget-time" class="text-2xl font-extrabold text-white">09:41</div>
+                        </div>
+                        <div class="text-[10px] text-gray-300">📍 Seúl, Corea del Sur</div>
+                    </div>
+
+                    <!-- Widget Twitter Trend Alert -->
+                    <div onclick="openApp('app-twitter')" class="glass p-3 rounded-2xl flex flex-col justify-between h-28 shadow-lg bg-gradient-to-br from-sky-900/40 to-blue-900/50 cursor-pointer border-sky-400/30 border">
+                        <div class="flex justify-between items-start">
+                            <i class="fa-brands fa-x-twitter text-sky-400 text-lg"></i>
+                            <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">TENDENCIA</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-sky-200">#JisungHazmeCaso</p>
+                            <p class="text-[9px] text-gray-300 line-clamp-1">14.2K Posts • ¡Trending ahora!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apps Grid -->
+                <div class="grid grid-cols-4 gap-y-4 gap-x-2 text-center my-auto px-1">
+                    
+                    <!-- App: Twitter / X -->
+                    <div onclick="openApp('app-twitter')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="relative w-13 h-13 w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-xl shadow-lg border border-white/20 transform group-active:scale-90 transition">
+                            <i class="fa-brands fa-x-twitter text-white"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-bounce">9+</span>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">X / Twitter</span>
+                    </div>
+
+                    <!-- App: Messages -->
+                    <div onclick="openApp('app-messages')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="relative w-12 h-12 bg-gradient-to-tr from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-solid fa-comment text-white"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Mensajes</span>
+                    </div>
+
+                    <!-- App: Photos / Gallery -->
+                    <div onclick="openApp('app-photos')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition overflow-hidden">
+                            <div class="grid grid-cols-2 gap-0.5 w-full h-full p-2">
+                                <div class="bg-red-400 rounded-full"></div>
+                                <div class="bg-yellow-400 rounded-full"></div>
+                                <div class="bg-sky-400 rounded-full"></div>
+                                <div class="bg-pink-400 rounded-full"></div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Fotos</span>
+                    </div>
+
+                    <!-- App: Notes -->
+                    <div onclick="openApp('app-notes')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-amber-200 text-amber-900 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-solid fa-note-sticky"></i>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Notas</span>
+                    </div>
+
+                    <!-- App: Phone / Call -->
+                    <div onclick="openApp('app-phone')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-gradient-to-tr from-green-500 to-teal-600 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-solid fa-phone text-white"></i>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Teléfono</span>
+                    </div>
+
+                    <!-- App: Instagram -->
+                    <div onclick="alert('📸 Insta @jisung_p_park: Renjun te acaba de enviar un DM también')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-brands fa-instagram text-white"></i>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Instagram</span>
+                    </div>
+
+                    <!-- App: Settings -->
+                    <div onclick="openApp('app-settings')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-slate-700 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-solid fa-gear text-white"></i>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Ajustes</span>
+                    </div>
+
+                    <!-- App: Spotify -->
+                    <div onclick="alert('🎵 Escuchando: NCT DREAM - Broken Melodies 🎶')" class="flex flex-col items-center cursor-pointer group">
+                        <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-xl shadow-lg transform group-active:scale-90 transition">
+                            <i class="fa-brands fa-spotify text-black text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] mt-1.5 font-medium tracking-tight text-white drop-shadow">Música</span>
+                    </div>
+
+                </div>
+
+                <!-- Bottom App Dock -->
+                <div class="glass p-2.5 rounded-3xl grid grid-cols-4 gap-2 mb-1">
+                    <div onclick="openApp('app-phone')" class="flex items-center justify-center">
+                        <div class="w-11 h-11 bg-green-500 rounded-2xl flex items-center justify-center text-lg shadow active:scale-95 transition">
+                            <i class="fa-solid fa-phone text-white"></i>
+                        </div>
+                    </div>
+                    <div onclick="openApp('app-messages')" class="flex items-center justify-center">
+                        <div class="w-11 h-11 bg-blue-500 rounded-2xl flex items-center justify-center text-lg shadow active:scale-95 transition">
+                            <i class="fa-solid fa-comment text-white"></i>
+                        </div>
+                    </div>
+                    <div onclick="openApp('app-twitter')" class="flex items-center justify-center">
+                        <div class="w-11 h-11 bg-black border border-white/20 rounded-2xl flex items-center justify-center text-lg shadow active:scale-95 transition">
+                            <i class="fa-brands fa-x-twitter text-white"></i>
+                        </div>
+                    </div>
+                    <div onclick="openApp('app-photos')" class="flex items-center justify-center">
+                        <div class="w-11 h-11 bg-gradient-to-tr from-pink-500 to-rose-400 rounded-2xl flex items-center justify-center text-lg shadow active:scale-95 transition">
+                            <i class="fa-solid fa-image text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. APPLICATION SCREENS LAYER -->
+            <div id="apps-container" class="absolute inset-0 pointer-events-none z-30">
+
+                <!-- APP: TWITTER / X (THE DETONATOR TWEET) -->
+                <div id="app-twitter" class="app-screen absolute inset-0 bg-black flex flex-col translate-y-full transition-transform duration-300 pointer-events-auto">
+                    <!-- Twitter Header -->
+                    <div class="pt-3 px-4 pb-2 border-b border-gray-800 flex items-center justify-between bg-black/90">
+                        <button onclick="closeApp()" class="text-sky-400 text-xs font-bold flex items-center">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Inicio
+                        </button>
+                        <i class="fa-brands fa-x-twitter text-white text-lg"></i>
+                        <span class="text-xs text-red-500 font-bold animate-pulse">¡VIRAL!</span>
+                    </div>
+
+                    <!-- Twitter Feed Content -->
+                    <div class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+                        
+                        <!-- MAIN QUOTE TWEET BY JISUNG -->
+                        <div class="bg-gray-900/90 border border-red-500/40 rounded-2xl p-3 shadow-xl">
+                            <!-- User Header -->
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
+                                    JS
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-1">
+                                        <h4 class="font-bold text-white text-xs truncate">Park Jisung</h4>
+                                        <i class="fa-solid fa-circle-check text-sky-400 text-[10px]"></i>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400">@Jisung_Park_NCT</p>
+                                </div>
+                                <span class="text-[9px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full">CUENTA PÚBLICA</span>
+                            </div>
+
+                            <!-- Jisung's embarrassing text -->
+                            <p class="text-xs text-white mb-2 font-medium">
+                                por favor hazme caso te lo pido 🙏😭 te hice unos dibujos en el ensayo y ni los miraste hyunggg
+                            </p>
+
+                            <!-- QUOTED TWEET (RENJUN'S PHOTO) -->
+                            <div class="border border-gray-700 rounded-xl p-2.5 bg-black/60 mb-2">
+                                <div class="flex items-center space-x-2 mb-1.5">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200" class="w-5 h-5 rounded-full object-cover">
+                                    <span class="font-bold text-white text-[11px]">Huang Renjun 🦊</span>
+                                    <span class="text-[9px] text-gray-400">@renjun_323</span>
+                                </div>
+                                <p class="text-[11px] text-gray-200 mb-2">Día soleado en el estudio ✨☀️</p>
+                                <!-- Renjun photo -->
+                                <div class="rounded-lg overflow-hidden h-40 bg-gray-800">
+                                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=500" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+
+                            <!-- Engagement statistics -->
+                            <div class="flex justify-between text-[10px] text-gray-400 pt-1 border-t border-gray-800">
+                                <span><strong class="text-white">4.2K</strong> Retweets</span>
+                                <span><strong class="text-white">18.9K</strong> Me gusta</span>
+                                <span><strong class="text-white">890</strong> Quotes</span>
+                            </div>
+                        </div>
+
+                        <!-- DRAMA REPLIES SECTION -->
+                        <h5 class="text-[11px] font-bold text-gray-400 px-1 pt-1">Respuestas de los chicos (Dream)</h5>
+
+                        <!-- Reply Chenle -->
+                        <div class="bg-gray-900/60 p-2.5 rounded-xl border border-gray-800 flex items-start space-x-2">
+                            <div class="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-[10px]">CL</div>
+                            <div class="flex-1 text-[11px]">
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-emerald-400">Zhong Chenle</span>
+                                    <span class="text-[9px] text-gray-500">Hace 3m</span>
+                                </div>
+                                <p class="text-gray-200 mt-0.5">WEYYYY JISUNG BORRA ESO TE EQUIVOCASTE DE CUENTA OTRA VEZ AJAJAJAJAJA 💀💀💀💀</p>
+                            </div>
+                        </div>
+
+                        <!-- Reply Jeno -->
+                        <div class="bg-gray-900/60 p-2.5 rounded-xl border border-gray-800 flex items-start space-x-2">
+                            <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-[10px]">JN</div>
+                            <div class="flex-1 text-[11px]">
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-blue-400">Lee Jeno</span>
+                                    <span class="text-[9px] text-gray-500">Hace 2m</span>
+                                </div>
+                                <p class="text-gray-200 mt-0.5">@Jisung_Park_NCT Bro... el mánager ya vio esto. Corre.</p>
+                            </div>
+                        </div>
+
+                        <!-- Reply Haechan -->
+                        <div class="bg-gray-900/60 p-2.5 rounded-xl border border-gray-800 flex items-start space-x-2">
+                            <div class="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center font-bold text-[10px]">HC</div>
+                            <div class="flex-1 text-[11px]">
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-amber-400">Haechan Hyung</span>
+                                    <span class="text-[9px] text-gray-500">Hace 1m</span>
+                                </div>
+                                <p class="text-gray-200 mt-0.5">MIEMBRO DE NCT DREAM EXPUESTO EN SEÚL AJAJAJA RENJUN YA LO ESTÁ LEYENDO PREPARA TU TUMBA JISUNG 🔥</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Delete button bar simulation -->
+                    <div class="p-3 bg-gray-900 border-t border-gray-800 flex justify-between items-center">
+                        <span class="text-[10px] text-gray-400">Estado: Publicado en red</span>
+                        <button onclick="alert('⚠️ ¡Demasiado tarde! El tweet ya tiene 18K Me gusta y Renjun tomó captura de pantalla.'); openApp('app-messages');" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-full transition">
+                            ¡INTENTAR BORRAR TWEET!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- APP: MESSAGES (CHAT WITH RENJUN & DREAM MEMBERS) -->
+                <div id="app-messages" class="app-screen absolute inset-0 glass-dark flex flex-col translate-y-full transition-transform duration-300 pointer-events-auto">
+                    
+                    <!-- Chat Header -->
+                    <div class="pt-2 px-3 pb-2.5 border-b border-gray-800 flex items-center justify-between bg-black/60">
+                        <button onclick="closeApp()" class="text-blue-400 text-xs flex items-center">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Chats
+                        </button>
+                        
+                        <!-- Contact Switcher / Header Title -->
+                        <div class="text-center flex items-center space-x-2 cursor-pointer" onclick="triggerRenjunCall()">
+                            <div class="relative w-7 h-7 rounded-full overflow-hidden border border-pink-400">
+                                <img id="chat-header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200" class="w-full h-full object-cover">
+                            </div>
+                            <div class="text-left">
+                                <h3 id="chat-header-name" class="font-bold text-xs text-pink-300 flex items-center">
+                                    Renjun 🦊 <i class="fa-solid fa-heart text-[9px] text-pink-500 ml-1"></i>
+                                </h3>
+                                <p id="chat-header-status" class="text-[9px] text-green-400 font-medium">Escribiendo...</p>
+                            </div>
+                        </div>
+
+                        <button onclick="triggerRenjunCall()" class="w-7 h-7 rounded-full bg-green-600/30 text-green-400 border border-green-500/40 flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-phone"></i>
+                        </button>
+                    </div>
+
+                    <!-- Chat Contact Selector Tabs -->
+                    <div class="flex bg-black/40 border-b border-gray-800 text-[10px] text-gray-400">
+                        <button onclick="switchChat('renjun')" id="tab-renjun" class="flex-1 py-1.5 font-bold text-pink-400 border-b-2 border-pink-500">Renjun 🦊 (1)</button>
+                        <button onclick="switchChat('chenle')" id="tab-chenle" class="flex-1 py-1.5 font-medium hover:text-white">Chenle 🐬</button>
+                        <button onclick="switchChat('dream')" id="tab-dream" class="flex-1 py-1.5 font-medium hover:text-white">Dream Chat 💬</button>
+                    </div>
+
+                    <!-- CHAT BODY: RENJUN (Interactive story choices) -->
+                    <div id="chat-renjun-body" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+                        <div class="text-center text-[9px] text-gray-500 my-1">Hoy 09:38 AM • iMessage</div>
+
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl rounded-tl-xs shadow-sm">
+                                ¿Park Jisung?
+                            </div>
+                            <span class="text-[8px] text-gray-400 mt-0.5 ml-1">09:39 AM</span>
+                        </div>
+
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl rounded-tl-xs shadow-sm">
+                                Acabo de ver lo que citaste en Twitter... ¿En serio se te olvidó cambiar a tu cuenta privada? 😂
+                            </div>
+                            <span class="text-[8px] text-gray-400 mt-0.5 ml-1">09:40 AM</span>
+                        </div>
+
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-pink-200 border border-pink-500/30 p-2.5 rounded-2xl rounded-tl-xs shadow-sm">
+                                ¿Es verdad lo que pusiste ahí? ¿De verdad querías que te hiciera caso? 👀
+                            </div>
+                            <span class="text-[8px] text-pink-400 mt-0.5 ml-1">09:41 AM</span>
+                        </div>
+                    </div>
+
+                    <!-- CHAT BODY: CHENLE (Static drama) -->
+                    <div id="chat-chenle-body" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs hidden">
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl rounded-tl-xs">
+                                WEY RESPENDEEEE
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl rounded-tl-xs">
+                                Te equivocaste de cuenta en Twitter, entraste a la verficada pública 😭
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                            <div class="bg-[#262930] text-emerald-300 p-2.5 rounded-2xl rounded-tl-xs">
+                                Renjun hyung te está buscando en la sala de práctica ajajaja buena suerte sobreviviente.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHAT BODY: DREAM GROUP (Static drama) -->
+                    <div id="chat-dream-body" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs hidden">
+                        <div class="flex flex-col items-start max-w-[85%]">
+                            <span class="text-[9px] text-amber-400 font-bold ml-1">Haechan Hyung</span>
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl">
+                                ¿Alguien tiene palomitas? El drama de Jisung está mejor que los K-dramas 🍿
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-start max-w-[85%]">
+                            <span class="text-[9px] text-blue-400 font-bold ml-1">Jeno</span>
+                            <div class="bg-[#262930] text-white p-2.5 rounded-2xl">
+                                Jisung no ha entrado al chat desde hace 5 minutos, debe estar temblando bajo la mesa.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INTERACTIVE RESPONSE CHOICES FOR JISUNG -->
+                    <div id="interactive-choices" class="p-2.5 bg-black/80 border-t border-gray-800 space-y-1.5">
+                        <p class="text-[10px] text-pink-300 font-semibold px-1">Responde a Renjun como Jisung:</p>
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <button onclick="sendUserChoice(1)" class="bg-blue-600/80 hover:bg-blue-600 text-white text-[11px] p-2 rounded-xl text-left font-medium transition active:scale-98">
+                                😳 "Hyung lo siento, ¡era para mi cuenta privada! Por favor no lo leas..."
+                            </button>
+                            <button onclick="sendUserChoice(2)" class="bg-pink-600/80 hover:bg-pink-600 text-white text-[11px] p-2 rounded-xl text-left font-medium transition active:scale-98">
+                                🫣 "Bueno... igual sí es verdad. ¿Podemos hablar en la sala de ensayo?"
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- APP: PHOTOS / GALLERY -->
+                <div id="app-photos" class="app-screen absolute inset-0 glass-dark flex flex-col translate-y-full transition-transform duration-300 pointer-events-auto">
+                    <div class="pt-2 px-4 pb-2 border-b border-gray-800 flex items-center justify-between bg-black/60">
+                        <button onclick="closeApp()" class="text-blue-400 text-xs flex items-center">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Inicio
+                        </button>
+                        <h3 class="font-bold text-xs">Álbum "Renjun 🦊"</h3>
+                        <span class="text-[10px] text-gray-400">6 Fotos</span>
+                    </div>
+
+                    <!-- Photos Grid -->
+                    <div class="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-1.5">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                        <img src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                        <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                        <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=300" onclick="openLightbox(this.src)" class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                    </div>
+
+                    <!-- Lightbox -->
+                    <div id="photo-modal" class="absolute inset-0 bg-black/95 z-50 flex flex-col items-center justify-center hidden" onclick="closeLightbox()">
+                        <img id="lightbox-img" class="max-w-[90%] max-h-[75%] rounded-2xl shadow-2xl border border-white/20">
+                        <p class="text-xs text-pink-300 mt-3 font-semibold">❤️ Guardado en Favoritos de Jisung</p>
+                    </div>
+                </div>
+
+                <!-- APP: SECRET NOTES -->
+                <div id="app-notes" class="app-screen absolute inset-0 glass-dark flex flex-col translate-y-full transition-transform duration-300 pointer-events-auto">
+                    <div class="pt-2 px-4 pb-2 border-b border-gray-800 flex items-center justify-between bg-black/60">
+                        <button onclick="closeApp()" class="text-amber-400 text-xs flex items-center">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Notas
+                        </button>
+                        <h3 class="font-bold text-xs">Borradores de Jisung</h3>
+                        <i class="fa-solid fa-lock text-amber-400 text-xs"></i>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-3 space-y-2.5">
+                        <div class="p-3 bg-amber-950/30 border border-amber-500/30 rounded-2xl">
+                            <h4 class="font-bold text-xs text-amber-300">📝 Mensaje sin enviar #14</h4>
+                            <p class="text-[11px] text-gray-200 mt-1 italic leading-snug">
+                                "Renjun hyung, a veces en las prácticas me quedo viéndote bailar y me olvido de mis pasos. Ojalá me prestaras un poquito más de atención sin que tenga que hacer tonterías en Twitter..."
+                            </p>
+                            <span class="text-[9px] text-amber-400/60 mt-2 block">Guardado ayer, 23:40</span>
+                        </div>
+
+                        <div class="p-3 bg-gray-900 border border-gray-800 rounded-2xl">
+                            <h4 class="font-bold text-xs text-sky-300">💡 Recordatorio de PIN</h4>
+                            <p class="text-[11px] text-gray-300 mt-1">El PIN del celular sigue siendo 1234. No cambiarlo o Chenle se dará cuenta.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- APP: PHONE / INCOMING CALL SIMULATION -->
+                <div id="app-phone" class="app-screen absolute inset-0 bg-gradient-to-b from-gray-900 via-slate-900 to-black flex flex-col justify-between p-6 translate-y-full transition-transform duration-300 pointer-events-auto z-40">
+                    
+                    <!-- Call Top Header -->
+                    <div class="flex flex-col items-center mt-8">
+                        <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-pink-500 to-amber-400 shadow-2xl mb-3 pulse-ring">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Renjun 🦊</h2>
+                        <p id="call-status-text" class="text-xs text-pink-300 mt-1 animate-pulse">Llamada de voz entrante...</p>
+                    </div>
+
+                    <!-- Call Actions (Answer / Decline) -->
+                    <div id="call-actions" class="flex justify-around items-center mb-8 px-4">
+                        <!-- Decline -->
+                        <button onclick="declineCall()" class="flex flex-col items-center group">
+                            <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white text-2xl shadow-lg group-active:scale-90 transition">
+                                <i class="fa-solid fa-phone-slash"></i>
+                            </div>
+                            <span class="text-[11px] text-gray-300 mt-2">Rechazar</span>
+                        </button>
+
+                        <!-- Accept -->
+                        <button onclick="acceptCall()" class="flex flex-col items-center group">
+                            <div class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-white text-2xl shadow-lg animate-bounce group-active:scale-90 transition">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <span class="text-[11px] text-gray-300 mt-2">Contestar</span>
+                        </button>
+                    </div>
+
+                    <!-- Active Call Timer View (Hidden initial) -->
+                    <div id="active-call-view" class="hidden flex-col items-center space-y-6 mb-8">
+                        <div id="call-timer" class="text-sm font-semibold text-green-400">00:01</div>
+                        
+                        <!-- Animated Soundwave -->
+                        <div class="flex items-center space-x-1 h-8">
+                            <div class="w-1 bg-pink-500 h-full animate-pulse"></div>
+                            <div class="w-1 bg-pink-400 h-2/3 animate-pulse"></div>
+                            <div class="w-1 bg-pink-300 h-4/5 animate-pulse"></div>
+                            <div class="w-1 bg-pink-500 h-1/2 animate-pulse"></div>
+                        </div>
+
+                        <button onclick="endActiveCall()" class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white text-2xl shadow-xl active:scale-90 transition">
+                            <i class="fa-solid fa-phone-slash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- APP: SETTINGS -->
+                <div id="app-settings" class="app-screen absolute inset-0 glass-dark flex flex-col translate-y-full transition-transform duration-300 pointer-events-auto">
+                    <div class="pt-2 px-4 pb-2 border-b border-gray-800 flex items-center justify-between bg-black/60">
+                        <button onclick="closeApp()" class="text-blue-400 text-xs flex items-center">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Inicio
+                        </button>
+                        <h3 class="font-bold text-xs">Ajustes</h3>
+                        <div class="w-4"></div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                        <div>
+                            <h4 class="text-gray-400 text-[10px] uppercase font-bold mb-2 tracking-wider">Fondo de pantalla</h4>
+                            <div class="grid grid-cols-3 gap-2">
+                                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400" onclick="changeWallpaper(this.src)" class="h-20 w-full object-cover rounded-xl border-2 border-pink-500 cursor-pointer">
+                                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400" onclick="changeWallpaper(this.src)" class="h-20 w-full object-cover rounded-xl border border-gray-700 cursor-pointer">
+                                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400" onclick="changeWallpaper(this.src)" class="h-20 w-full object-cover rounded-xl border border-gray-700 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900 rounded-2xl p-3 space-y-2 border border-gray-800">
+                            <div class="flex justify-between py-1 border-b border-gray-800">
+                                <span class="text-gray-300">AU AU Mode</span>
+                                <span class="text-pink-400 font-bold">NCT Dream - Jisung POV</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-gray-800">
+                                <span class="text-gray-300">PIN de Bloqueo</span>
+                                <span class="text-gray-400">1234</span>
+                            </div>
+                        </div>
+
+                        <button onclick="lockPhone()" class="w-full bg-red-600/30 text-red-400 border border-red-500/30 py-2.5 rounded-xl font-semibold active:scale-95 transition">
+                            Bloquear teléfono de Jisung
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BOTTOM NAVIGATION HOME BAR -->
+        <div class="relative z-50 flex justify-center pb-1 pt-2 cursor-pointer" onclick="closeApp()">
+            <div class="w-32 h-1 bg-white/70 rounded-full hover:bg-white transition-all active:scale-95"></div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT SIMULATION LOGIC -->
+    <script>
+        // State variables
+        let currentPin = "";
+        const correctPin = "1234";
+        let synth = null;
+        let callTimerInterval = null;
+        let callSeconds = 0;
+
+        // Initialize clock on load
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Audio synthesizer for audio/call simulations
+            synth = new Tone.Synth().toDestination();
+        };
+
+        // Real-time Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('es-ES', options);
+
+            document.getElementById('status-clock').innerText = timeStr;
+            document.getElementById('lock-clock').innerText = timeStr;
+            document.getElementById('widget-time').innerText = timeStr;
+            document.getElementById('lock-date').innerText = dateStr;
+        }
+
+        // Lockscreen interaction
+        function showPasscodeScreen() {
+            document.getElementById('lock-notifications-list').classList.add('hidden');
+            document.getElementById('lock-bottom-hint').classList.add('hidden');
+            document.getElementById('passcode-container').classList.remove('hidden');
+        }
+
+        function pressPin(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updatePinDots();
+                
+                if (currentPin.length === 4) {
+                    setTimeout(verifyPin, 180);
+                }
+            }
+        }
+
+        function deletePin() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updatePinDots();
+            }
+        }
+
+        function updatePinDots() {
+            const dots = document.getElementById('pin-dots').children;
+            for (let i = 0; i < 4; i++) {
+                if (i < currentPin.length) {
+                    dots[i].classList.add('bg-white');
+                } else {
+                    dots[i].classList.remove('bg-white');
+                }
+            }
+        }
+
+        function verifyPin() {
+            if (currentPin === correctPin) {
+                unlockPhone();
+            } else {
+                const dotsContainer = document.getElementById('pin-dots');
+                dotsContainer.classList.add('animate-shake');
+                setTimeout(() => {
+                    dotsContainer.classList.remove('animate-shake');
+                    currentPin = "";
+                    updatePinDots();
+                }, 400);
+            }
+        }
+
+        function unlockPhone() {
+            document.getElementById('lock-screen').classList.add('opacity-0', 'pointer-events-none', '-translate-y-10');
+            document.getElementById('home-screen').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+            document.getElementById('home-screen').classList.add('scale-100');
+            document.getElementById('lock-icon').className = "fa-solid fa-lock-open text-xs mb-1 text-green-400";
+        }
+
+        function lockPhone() {
+            closeApp();
+            currentPin = "";
+            updatePinDots();
+            
+            document.getElementById('passcode-container').classList.add('hidden');
+            document.getElementById('lock-notifications-list').classList.remove('hidden');
+            document.getElementById('lock-bottom-hint').classList.remove('hidden');
+            
+            document.getElementById('home-screen').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+            document.getElementById('lock-screen').classList.remove('opacity-0', 'pointer-events-none', '-translate-y-10');
+            document.getElementById('lock-icon').className = "fa-solid fa-lock text-xs mb-1 text-white/70";
+        }
+
+        // App Navigation
+        function openApp(appId) {
+            const app = document.getElementById(appId);
+            if (app) {
+                app.classList.remove('translate-y-full');
+            }
+        }
+
+        function closeApp() {
+            const apps = document.querySelectorAll('.app-screen');
+            apps.forEach(app => app.classList.add('translate-y-full'));
+        }
+
+        // Dynamic Island details toggle
+        function toggleIslandDetails() {
+            const content = document.getElementById('island-content');
+            if (content.innerText === "1234 PIN") {
+                content.innerText = "Renjun 🦊 Llamando...";
+            } else {
+                content.innerText = "1234 PIN";
+            }
+        }
+
+        // Chat contact switcher
+        function switchChat(contact) {
+            document.getElementById('chat-renjun-body').classList.add('hidden');
+            document.getElementById('chat-chenle-body').classList.add('hidden');
+            document.getElementById('chat-dream-body').classList.add('hidden');
+
+            document.getElementById('tab-renjun').className = "flex-1 py-1.5 font-medium hover:text-white";
+            document.getElementById('tab-chenle').className = "flex-1 py-1.5 font-medium hover:text-white";
+            document.getElementById('tab-dream').className = "flex-1 py-1.5 font-medium hover:text-white";
+
+            if (contact === 'renjun') {
+                document.getElementById('chat-renjun-body').classList.remove('hidden');
+                document.getElementById('tab-renjun').className = "flex-1 py-1.5 font-bold text-pink-400 border-b-2 border-pink-500";
+                document.getElementById('interactive-choices').classList.remove('hidden');
+            } else if (contact === 'chenle') {
+                document.getElementById('chat-chenle-body').classList.remove('hidden');
+                document.getElementById('tab-chenle').className = "flex-1 py-1.5 font-bold text-emerald-400 border-b-2 border-emerald-500";
+                document.getElementById('interactive-choices').classList.add('hidden');
+            } else if (contact === 'dream') {
+                document.getElementById('chat-dream-body').classList.remove('hidden');
+                document.getElementById('tab-dream').className = "flex-1 py-1.5 font-bold text-amber-400 border-b-2 border-amber-500";
+                document.getElementById('interactive-choices').classList.add('hidden');
+            }
+        }
+
+        // Send user choice in Renjun interactive chat
+        function sendUserChoice(option) {
+            const chatBody = document.getElementById('chat-renjun-body');
+            let userText = "";
+            let renjunReply = "";
+
+            if (option === 1) {
+                userText = "😳 Hyung lo siento, ¡era para mi cuenta privada! Por favor no lo leas...";
+                renjunReply = "Aja... ¿Y de verdad crees que no lo leí? Jeno le tomó captura antes de que intentaras borrarlo 🤭";
+            } else {
+                userText = "🫣 Bueno... igual sí es verdad. ¿Podemos hablar en la sala de ensayo?";
+                renjunReply = "Está bien, tonto. Voy para allá ahora mismo. Guarda los dibujos que me hiciste ❤️";
+            }
+
+            // Append user message
+            const userMsgHtml = `
+                <div class="flex flex-col items-end max-w-[85%] ml-auto relative bubble-out">
+                    <div class="bg-blue-600 text-white p-2.5 rounded-2xl rounded-tr-xs shadow-sm">
+                        ${userText}
+                    </div>
+                    <span class="text-[8px] text-gray-400 mt-0.5 mr-1">Ahora</span>
+                </div>
+            `;
+            chatBody.insertAdjacentHTML('beforeend', userMsgHtml);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Hide choices temporary
+            document.getElementById('interactive-choices').classList.add('opacity-50', 'pointer-events-none');
+
+            // Renjun live reply simulation
+            setTimeout(() => {
+                const renjunMsgHtml = `
+                    <div class="flex flex-col items-start max-w-[85%] relative bubble-in">
+                        <div class="bg-[#262930] text-pink-200 border border-pink-500/30 p-2.5 rounded-2xl rounded-tl-xs shadow-sm">
+                            ${renjunReply}
+                        </div>
+                        <span class="text-[8px] text-pink-400 mt-0.5 ml-1">Ahora</span>
+                    </div>
+                `;
+                chatBody.insertAdjacentHTML('beforeend', renjunMsgHtml);
+                chatBody.scrollTop = chatBody.scrollHeight;
+                document.getElementById('interactive-choices').classList.remove('opacity-50', 'pointer-events-none');
+
+                // Trigger incoming phone call after 2.5s for maximum AU drama!
+                setTimeout(() => {
+                    triggerRenjunCall();
+                }, 2500);
+
+            }, 1200);
+        }
+
+        // Phone call simulation functions
+        function triggerRenjunCall() {
+            openApp('app-phone');
+            document.getElementById('call-actions').classList.remove('hidden');
+            document.getElementById('active-call-view').classList.add('hidden');
+            document.getElementById('call-status-text').innerText = "Llamada de voz entrante...";
+            
+            // Audio ring synth effect
+            Tone.start();
+            if (synth) {
+                synth.triggerAttackRelease("A4", "4n");
+            }
+        }
+
+        function acceptCall() {
+            document.getElementById('call-actions').classList.add('hidden');
+            document.getElementById('active-call-view').classList.remove('hidden');
+            document.getElementById('active-call-view').classList.add('flex');
+            document.getElementById('call-status-text').innerText = "Llamada conectada 🦊";
+
+            callSeconds = 0;
+            callTimerInterval = setInterval(() => {
+                callSeconds++;
+                const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+                const secs = String(callSeconds % 60).padStart(2, '0');
+                document.getElementById('call-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function declineCall() {
+            if (callTimerInterval) clearInterval(callTimerInterval);
+            closeApp();
+        }
+
+        function endActiveCall() {
+            declineCall();
+        }
+
+        // Photos Lightbox
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('photo-modal').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('photo-modal').classList.add('hidden');
+        }
+
+        // Settings wallpaper
+        function changeWallpaper(url) {
+            document.getElementById('phone-wallpaper').style.backgroundImage = `url('${url}')`;
+        }
+    </script>
+</body>
+</html>
